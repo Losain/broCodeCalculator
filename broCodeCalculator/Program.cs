@@ -32,19 +32,21 @@ namespace broCodeCalculator
                 switch(opratr)
                 {
                     case "+":
+                        Console.WriteLine(num1 + num2);
                         break;
                     case "-":
+                        Console.WriteLine(num1 - num2);
                         break;
                     case "*":
+                        Console.WriteLine(num1 * num2);
                         break;
                     case "/":
+                        Console.WriteLine(num1 / num2);
                         break;
                 }
-
+                //I considered having some code to end the program but figured that like the calculator in most apps, it should 
+                //stay open until the user just clicks the x. So there's no real reason to do that.
             }
-
-            //prevent the program from closing
-            Console.ReadLine();
         }
     }
 }
