@@ -5,84 +5,79 @@ namespace broCodeCalculator
 {
     public class MyClass
     {
-        static void Main(string[] args)
+        private const string EXIT = "EXIT";
+#pragma warning disable SYSLIB1045, IDE0079
+        private readonly static Regex _pattern = new(@"^([\d\.]+)\s*([-+*/])\s*([\d\.]+)$", RegexOptions.Compiled);
+#pragma warning restore SYSLIB1045, IDE0079
+
+        static void Main()//didn't need arg
         {
-            //declare variables
-            double num1;
-            double num2;
-            string opratr;
-            bool calcAgain = true;
-            string input;
-            Match match;
+            //declare variables. inefficient. may not actually use. 
+            // double num1;
+            //double num2;
+            //string opratr;
+            //bool calcAgain = true;
+            //string input;
+            //Match match;
             //we want to continue calculating until we are told to exit.
 
             //lets try to mess with REGEX and parsing the string. 
-            string pattern = @"(\d+)\s*([-+*/])\s*(\d+)"; //I did a bad and copied this regex from the internet. 
-            while (calcAgain)
+            //string pattern = @"^([\d\.]+)\s*([-+*/])\s*([\d\.]+)$"; //I did a bad and copied this regex from the internet. (?:) == dosn't capture group. 
+            //regex need anchors. 
+
+            while (true)//Loop exiting is handled in conditions. I KNOW WHAT I DID. 
             {
                 //ask for input
                 //TODO, make this more robust. IE ask for a single line, parse the information. also check for good data. 
                 Console.WriteLine("welcome to calculator");
-                input = Console.ReadLine();
-                match = Regex.Match(input, pattern);
-                if (match.Success)
+                string input = Console.ReadLine();
+                input = input.Trim();
+                if (input.Equals(EXIT, StringComparison.CurrentCultureIgnoreCase))
                 {
-                    num1 = Convert.ToDouble(match.Groups[1].Value);
-                    opratr = match.Groups[2].Value;
-                    num2 = Convert.ToDouble(match.Groups[3].Value);
-
-                    switch (opratr)
-                    {
-                        case "+":
-                            Console.WriteLine(num1 + num2);
-                            break;
-                        case "-":
-                            Console.WriteLine(num1 - num2);
-                            break;
-                        case "*":
-                            Console.WriteLine(num1 * num2);
-                            break;
-                        case "/":
-                            Console.WriteLine(num1 / num2);
-                            break;
-                    }
+                    Console.WriteLine("BYE");
+                    break;
                 }
-                else
+                try
                 {
-                    Console.WriteLine("String format not recognized");
+                    Console.WriteLine(Evaluate(input));
                 }
-
-            /*    Console.Write("please enter your first number: ");
-                num1 = Convert.ToDouble(Console.ReadLine());
-                Console.WriteLine("First number is: " + num1);
-                Console.WriteLine("Please enter you second number: ");
-                num2 = Convert.ToDouble(Console.ReadLine());
-                Console.WriteLine("Second number is: " + num2);
-            */
-
-                //ask for the operator
-               /* Console.WriteLine("Please enter an operator (+,-,*, or /");
-                opratr = Console.ReadLine();*/
-
-                //do the maths
-          /*      switch(opratr)
+                catch (ArgumentException e)
                 {
-                    case "+":
-                        Console.WriteLine(num1 + num2);
-                        break;
-                    case "-":
-                        Console.WriteLine(num1 - num2);
-                        break;
-                    case "*":
-                        Console.WriteLine(num1 * num2);
-                        break;
-                    case "/":
-                        Console.WriteLine(num1 / num2);
-                        break;
-                }*/
-                //I considered having some code to end the program but figured that like the calculator in most apps, it should 
-                //stay open until the user just clicks the x. So there's no real reason to do that.
+                    Console.WriteLine(e.Message);
+                }
             }
+        }
+
+        public static double Evaluate(string input)
+        {
+            Match match = _pattern.Match(input);
+            if (!match.Success)
+            {
+                throw new ArgumentException($"'{input}' is not properly formated.");
+            }
+            //variables string TODO. 
+            bool num1Converted = double.TryParse(match.Groups[1].Value, out double num1);
+            bool num2Converted = double.TryParse(match.Groups[3].Value, out double num2);
+            if (!num1Converted)//"failing faster sorta (not technically)
+            {
+                throw new ArgumentException($"'{match.Groups[1].Value}' is not a number.");
+            }
+            if (!num2Converted)//"failing faster sorta (not technically)
+            {
+                throw new ArgumentException($"'{match.Groups[3].Value}' is not a number.");
+            }
+            //double num1 = Convert.ToDouble(match.Groups[1].Value);
+            string opratr = match.Groups[2].Value;
+            //double num2 = Convert.ToDouble(match.Groups[3].Value);
+
+            return opratr switch
+            {
+                "+" => num1 + num2,
+                "-" => num1 - num2,
+                "*" => num1 * num2,
+                "/" => num1 / num2,
+                _ => throw new ArgumentException("This can't happen"),//this would never happen because of regex
+            };
         }
     }
 }
