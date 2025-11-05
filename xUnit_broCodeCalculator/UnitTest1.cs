@@ -32,17 +32,22 @@ namespace xUnit_broCodeCalculator
         [InlineData("1.1.2+2", "'1.1.2' is not a number.")] //$"'{match.Groups[1].Value}' is not a number."
         [InlineData("2+2.2.3", "'2.2.3' is not a number.")]
         [InlineData("", "'' is not properly formated.")]
-        //[InlineData(null, "'' is not properly formated.")] null is not captured. 
+        [InlineData(" ", "' ' is not properly formated.")]
+        [InlineData("sillybillt+tillywilly", "'sillybillt+tillywilly' is not properly formated.")]
 
-        //can't/don't overload unit toast. 
         public void NumberEval(string input, string expected)
         {
             ArgumentException e = Assert.Throws<ArgumentException>(() => broCodeCalculator.MyClass.Evaluate(input));
             Assert.Equal(expected, e.Message);
         }
 
-        //Fact for null arg exception.
-        //white space
-        //random string 
+        //Fact for null arg exception. I"M 100% certain I did this wrong. 
+        [Fact]
+        public void NullArgExceptn()
+        {
+            string input = null;
+            ArgumentException e = Assert.Throws<ArgumentNullException>(() => broCodeCalculator.MyClass.Evaluate(input));//$"'{input}' is not properly formated."
+            Assert.Equal("Value cannot be null. (Parameter 'input')", e.Message);
+        }
     }
 }
