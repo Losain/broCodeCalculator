@@ -1,8 +1,8 @@
 ﻿using System;
 
-public class Calculator
+public class Class1
 {
-	public Calculator()
+	public Class1()
 	{
 	}
 }
