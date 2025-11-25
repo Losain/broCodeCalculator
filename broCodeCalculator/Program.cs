@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("xUnit_broCodeCalculator.UnitTest1.cs")]
+
 
 namespace broCodeCalculator
 {
     public class MyClass
     {
         private const string EXIT = "EXIT";
-#pragma warning disable SYSLIB1045, IDE0079
-        private readonly static Regex _pattern = new(@"^([\d\.]+)\s*([-+*/])\s*([\d\.]+)$", RegexOptions.Compiled);
-#pragma warning restore SYSLIB1045, IDE0079
-
         static void Main()
         {
 
             while (true)//Loop exiting is handled in conditions. I KNOW WHAT I DID. 
             {
-                Calculator calculator = new Calculator();
+                _ = new Calculator();
 
-                calculator.QueryUserIntro();
+                Calculator.QueryUserIntro();
 
                 string input = Console.ReadLine();
                 input = input.Trim();
@@ -29,7 +28,7 @@ namespace broCodeCalculator
                 }
                 try
                 {
-                    Console.WriteLine(calculator.Evaluate(input));
+                    Console.WriteLine(Calculator.Evaluate(input));
                 }
                 catch (ArgumentException e)
                 {

@@ -1,3 +1,6 @@
+using System.IO.Compression;
+using broCodeCalculator;
+
 namespace xUnit_broCodeCalculator
 {
     public class UnitTest1
@@ -16,15 +19,17 @@ namespace xUnit_broCodeCalculator
 
         public void Test2(string input, double expected)
         {
-            double actual = broCodeCalculator.MyClass.Evaluate(input);
+            Calculator calc = new Calculator();
+            double actual = Calculator.Evaluate(input);
             Assert.Equal(expected, actual);
         }
 
         [Fact]
         public void SadPath()
         {
+            Calculator calculator = new();
             string input = "hihowareyeah";
-            ArgumentException e = Assert.Throws<ArgumentException>(() => broCodeCalculator.MyClass.Evaluate(input));//$"'{input}' is not properly formated."
+            ArgumentException e = Assert.Throws<ArgumentException>(() => Calculator.Evaluate(input));//$"'{input}' is not properly formated."
             Assert.Equal($"'{input}' is not properly formated.", e.Message);
         }
 
@@ -37,7 +42,8 @@ namespace xUnit_broCodeCalculator
 
         public void NumberEval(string input, string expected)
         {
-            ArgumentException e = Assert.Throws<ArgumentException>(() => broCodeCalculator.MyClass.Evaluate(input));
+            Calculator calculator = new();
+            ArgumentException e = Assert.Throws<ArgumentException>(() => Calculator.Evaluate(input));
             Assert.Equal(expected, e.Message);
         }
 
@@ -45,8 +51,11 @@ namespace xUnit_broCodeCalculator
         [Fact]
         public void NullArgExceptn()
         {
-            string input = null;
-            ArgumentException e = Assert.Throws<ArgumentNullException>(() => broCodeCalculator.MyClass.Evaluate(input));//$"'{input}' is not properly formated."
+            Calculator calculator = new();
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+            string input = null;//this is a test we are purposly handling null in the exceptions.
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+            ArgumentException e = Assert.Throws<ArgumentNullException>(() => Calculator.Evaluate(input));//$"'{input}' is not properly formated."
             Assert.Equal("Value cannot be null. (Parameter 'input')", e.Message);
         }
     }
