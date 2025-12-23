@@ -14,7 +14,6 @@ namespace broCodeCalculator
 
             while (true)//Loop exiting is handled in conditions. I KNOW WHAT I DID. 
             {
-                _ = new Calculator();
 
                 Calculator.QueryUserIntro();
 

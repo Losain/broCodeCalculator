@@ -7,11 +7,14 @@ using System.Threading.Tasks;
 
 namespace broCodeCalculator
 {
-    
-    public class Calculator
+
+    public static class Calculator
     {
-        private readonly static Regex _pattern = new(@"^[\d\.]+\s*[\-+*/]\s*[\d\.]+(?:\s*[\-+*/]\s*[\d\.]+)*$", RegexOptions.Compiled);
+#pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
+        private readonly static Regex _pattern = new(@"^\-?[\d\.]+[+*/]\-?[\d\.]+(?:[+*/]\-?[\d\.]+)*$", RegexOptions.Compiled);
         private readonly static Regex _operators = new(@"[+/*\-]");
+#pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
+
 
         //underscore class level fields.
         public static void QueryUserIntro()
@@ -20,66 +23,87 @@ namespace broCodeCalculator
             Console.WriteLine("Please enter your query:");
         }
 
-        public static double Evaluate(string input)
+        public static double Evaluate(string copyOfVal)
         {
-            Match match = _pattern.Match(input);
-            if (!match.Success)
+#pragma warning disable SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
+            copyOfVal = Regex.Replace(copyOfVal, @"\s", "");
+            copyOfVal = Regex.Replace(copyOfVal, "\\-{2}", "+");
+            copyOfVal = Regex.Replace(copyOfVal, "\\-", "+-");
+            copyOfVal = Regex.Replace(copyOfVal, @"([/*-])\+", "$1");
+            copyOfVal = Regex.Replace(copyOfVal, @"\+{2,}", "+");
+            copyOfVal = Regex.Replace(copyOfVal, @"(^|\()[+/*]+", "$1");
+            copyOfVal = Regex.Replace(copyOfVal, @"[+/*-]+($|\))", "$1");
+
+            Regex parenthesesPattern = new(@"\(([^()]+)\)");
+#pragma warning restore SYSLIB1045 // Convert to 'GeneratedRegexAttribute'.
+            Match parenMatch;
+            while ((parenMatch = parenthesesPattern.Match(copyOfVal)).Success)
             {
-                throw new ArgumentException($"'{input}' is not properly formated.");
-            }
-           /* if (string.IsNullOrWhiteSpace(input))
-            {
-                throw new ArgumentException($"'{input}' is not properly formated.");
-            }*/
-
-
-            input = ProcessOperation(input, "/");
-            input = ProcessOperation(input, "*");
-            input = ProcessOperation(input, "-");
-            input = ProcessOperation(input, "+");
-
-            return double.Parse(input);
-        }
-        static string ProcessOperation(string expression, string op)
-        {
-
-            Regex formulaPattern = new($@"([\d\.]+)\s*{Regex.Escape(op)}\s*([\d\.]+)");
-            if (!_operators.IsMatch(op))
-            {
-                throw new ArgumentException($"'{op}' is not recognized.");
+                string innerExpression = parenMatch.Groups[1].Value;
+                double innerResult = EvaluateExpression(innerExpression);
+                copyOfVal = copyOfVal.ReplaceFirst(parenMatch.Groups[0].Value, innerResult.ToString());
             }
 
-
-
-            Match match;
-            while((match = formulaPattern.Match(expression)).Success) 
+            static double EvaluateExpression(string expression)
             {
-                bool num1Converted = double.TryParse(match.Groups[1].Value, out double num1);
-                bool num2Converted = double.TryParse(match.Groups[2].Value, out double num2);
-
-                if (!num1Converted)
+                if (double.TryParse(expression, out double singleValue))
                 {
-                    throw new ArgumentException($"'{match.Groups[1].Value}' is not a number.");
-
+                    return singleValue;
                 }
 
-                if (!num2Converted)
+                Match match = _pattern.Match(expression);
+                if (!match.Success)
                 {
-                    throw new ArgumentException($"'{match.Groups[2].Value}' is not a number.");
+                    throw new ArgumentException($"'{expression}' is not properly formatted.");
                 }
 
+                expression = ProcessOperation(expression, "/");
+                expression = ProcessOperation(expression, "*");
+                expression = ProcessOperation(expression, "+");
 
-                double evaluatedNums = op switch
-                {
-                    "+" => num1 + num2,//could receive 2+2+2*3/6-1 -> 4+2*3/6-1 -> 6*3/6-1
-                    "-" => num1 - num2,
-                    "*" => num1 * num2,
-                    "/" => num1 / num2,
-                    _ => throw new ArgumentException("This can't happen"),//this would never happen because of regex
-                };
-                expression = expression.ReplaceFirst(match.Groups[0].Value, evaluatedNums.ToString());
+                return double.Parse(expression);
             }
-            return expression;
+
+            static string ProcessOperation(string expression, string op)
+            {
+
+                Regex formulaPattern = new($@"(\-?[\d\.]+){Regex.Escape(op)}(\-?[\d\.]+)");
+                if (!_operators.IsMatch(op))
+                {
+                    throw new ArgumentException($"'{op}' is not recognized.");
+                }
+
+                Match match;
+                while ((match = formulaPattern.Match(expression)).Success)
+                {
+                    bool num1Converted = double.TryParse(match.Groups[1].Value, out double num1);
+                    bool num2Converted = double.TryParse(match.Groups[2].Value, out double num2);
+
+                    if (!num1Converted)
+                    {
+                        throw new ArgumentException($"'{match.Groups[1].Value}' is not a number.");
+
+                    }
+
+                    if (!num2Converted)
+                    {
+                        throw new ArgumentException($"'{match.Groups[2].Value}' is not a number.");
+                    }
+
+
+                    double evaluatedNums = op switch
+                    {
+                        "+" => num1 + num2,
+                        "-" => num1 - num2,
+                        "*" => num1 * num2,
+                        "/" => num1 / num2,
+                        _ => throw new ArgumentException("This can't happen"),
+                    };
+                    expression = expression.ReplaceFirst(match.Groups[0].Value, evaluatedNums.ToString());
+                }
+                return expression;
+            }
+            return EvaluateExpression(copyOfVal);
         }
     }
 }

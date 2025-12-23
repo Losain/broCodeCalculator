@@ -16,33 +16,73 @@ namespace xUnit_broCodeCalculator
         [InlineData("12-2", 10)]
         [InlineData("12*2", 24)]
         [InlineData("12/2", 6)]
+        [InlineData("1/2*(1+2)", 1.5)]
+        // Parentheses tests
+        [InlineData("(5+3)", 8)]
+        [InlineData("(2*3)+4", 10)]
+        [InlineData("10-(2+3)", 5)]
+        [InlineData("(10/2)*3", 15)]
+        [InlineData("2*(3+4)", 14)]
+        // Negative numbers
+        [InlineData("-5+3", -2)]
+        [InlineData("2*-3", -6)]
+        [InlineData("-5*-2", 10)]
+        [InlineData("10+-5", 5)]
+        [InlineData("-10-5", -15)]
+        // Double negatives
+        [InlineData("1--2", 3)]
+        [InlineData("5---3", 2)]
+        // Chained operations (PEMDAS)
+        [InlineData("2+3*4", 14)]
+        [InlineData("10/2*3", 15)]
+        [InlineData("2*3+4*5", 26)]
+        // Decimal operations
+        [InlineData("0.5+0.5", 1)]
+        [InlineData("1.5*2", 3)]
+        [InlineData("10/4", 2.5)]
+        [InlineData("0.1+0.2", 0.3)]
+        // Whitespace handling
+        [InlineData("1 + 2", 3)]
+        [InlineData("12 + 2", 14)]
+        [InlineData("  5  *  2  ", 10)]
+        // Complex expressions
+        [InlineData("(2+3)*(4-1)", 15)]
+        [InlineData("100/2/5", 10)]
+        [InlineData("2+2+2+2", 8)]
+        [InlineData("8", 8)]
+        [InlineData("-5", -5)]
+        [InlineData("3.14", 3.14)]
+        // Test edge cases from your new regex preprocessing
+        [InlineData("1+2-", 3)]  // Trailing operator cleanup
+        [InlineData("(2+3-)", 5)]  // Operator cleanup in parentheses
+        [InlineData("1++2", 3)]  // Multiple plus signs
 
         public void Test2(string input, double expected)
         {
-            Calculator calc = new Calculator();
             double actual = Calculator.Evaluate(input);
-            Assert.Equal(expected, actual);
+            //actual = Math.Round(actual, 5);
+            Assert.Equal(expected, actual, 6);//could round before comparing??
         }
 
         [Fact]
         public void SadPath()
         {
-            Calculator calculator = new();
             string input = "hihowareyeah";
             ArgumentException e = Assert.Throws<ArgumentException>(() => Calculator.Evaluate(input));//$"'{input}' is not properly formated."
-            Assert.Equal($"'{input}' is not properly formated.", e.Message);
+            Assert.Equal($"'{input}' is not properly formatted.", e.Message);
         }
 
         [Theory]
         [InlineData("1.1.2+2", "'1.1.2' is not a number.")] //$"'{match.Groups[1].Value}' is not a number."
         [InlineData("2+2.2.3", "'2.2.3' is not a number.")]
-        [InlineData("", "'' is not properly formated.")]
-        [InlineData(" ", "' ' is not properly formated.")]
-        [InlineData("sillybillt+tillywilly", "'sillybillt+tillywilly' is not properly formated.")]
+        [InlineData("", "'' is not properly formatted.")]
+        [InlineData(" ", "'' is not properly formatted.")]
+        [InlineData("sillybillt+tillywilly", "'sillybillt+tillywilly' is not properly formatted.")]
+        [InlineData("2*/3", "'2*/3' is not properly formatted.")]  // Invalid operator sequence (if applicable)
+
 
         public void NumberEval(string input, string expected)
         {
-            Calculator calculator = new();
             ArgumentException e = Assert.Throws<ArgumentException>(() => Calculator.Evaluate(input));
             Assert.Equal(expected, e.Message);
         }
@@ -51,10 +91,7 @@ namespace xUnit_broCodeCalculator
         [Fact]
         public void NullArgExceptn()
         {
-            Calculator calculator = new();
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-            string input = null;//this is a test we are purposly handling null in the exceptions.
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+            string? input = null;//this is a test we are purposly handling null in the exceptions.
             ArgumentException e = Assert.Throws<ArgumentNullException>(() => Calculator.Evaluate(input));//$"'{input}' is not properly formated."
             Assert.Equal("Value cannot be null. (Parameter 'input')", e.Message);
         }
